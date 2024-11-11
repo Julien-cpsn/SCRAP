@@ -33,7 +33,6 @@
 
 	let name = $selected_conference_store.conference_name
 	let acronym = $selected_conference_store.conference_acronym
-	let keywords = $selected_conference_store.keywords
 
 	let publications = $state([])
 	let search = $state('')
@@ -127,6 +126,7 @@
 	}
 
 	async function ask_chat_gpt() {
+		const keywords = $selected_conference_store.keywords
 		if (keywords === undefined || keywords === '') {
 			return
 		}

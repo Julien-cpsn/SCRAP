@@ -36,12 +36,8 @@
 	}
 
 	function select_conference(conference) {
-		selected_conference_store.update(() => {
-			return {
-				conference_name: conference.venue,
-				conference_acronym: conference.acronym,
-			}
-		})
+		$selected_conference_store.conference_name = conference.venue
+		$selected_conference_store.conference_acronym = conference.acronym
 
 		goto(`/conference/${conference.acronym}`)
 	}
