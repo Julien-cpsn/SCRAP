@@ -29,7 +29,7 @@
 	} from 'flowbite-svelte-icons'
 	import { selected_conference_store } from '../../../stores/app-store.js'
 	import { sineOut } from 'svelte/easing'
-	import { SCRAP_HUB_URL } from '$env/static/public';
+	import { SCRAP_API_URL, SCRAP_HUB_URL } from '$env/static/public';
 
 	let name = $selected_conference_store.conference_name
 	let acronym = $selected_conference_store.conference_acronym
@@ -75,7 +75,7 @@
 			return
 		}
 
-		const response = await axios.post('http://localhost:8011/find-publications', { acronym: acronym.toLowerCase() })
+		const response = await axios.post(`${SCRAP_API_URL}/find-publications`, { acronym: acronym.toLowerCase() })
 
 		if (response.status === 200) {
 			publications = await response.data.map(publication => {
@@ -153,7 +153,7 @@
 			}
 
 			const response = await axios.post(
-				'http://localhost:8011/ask-chat-gpt',
+				`${SCRAP_API_URL}/ask-chat-gpt`,
 				{
 					publications: batch_str,
 					keywords: keywords
@@ -208,6 +208,10 @@
 		document.body.removeChild(element);
 	}
 </script>
+
+<svelte:head>
+	<title>{acronym} | Publications</title>
+</svelte:head>
 
 <div class="flex flex-col">
 	<div class="flex flex-col md:flex-row items-center justify-between mx-3 my-5">

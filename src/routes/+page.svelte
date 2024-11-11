@@ -13,6 +13,7 @@
 	import { SearchOutline } from 'flowbite-svelte-icons'
 	import { goto } from '$app/navigation'
 	import { selected_conference_store } from '../stores/app-store.js'
+	import { SCRAP_API_URL } from '$env/static/public';
 
 	let search = $state('')
 
@@ -25,7 +26,7 @@
 		}
 
 		loading = true
-		const response = await axios.post('http://localhost:8011/find-conference', { name: search })
+		const response = await axios.post(`${SCRAP_API_URL}/find-conference`, { name: search })
 
 		loading = false
 
@@ -45,6 +46,10 @@
 		goto(`/conference/${conference.acronym}`)
 	}
 </script>
+
+<svelte:head>
+	<title>Home</title>
+</svelte:head>
 
 <div class="mx-auto my-10 w-3/4 md:w-1/2">
 	<Input
