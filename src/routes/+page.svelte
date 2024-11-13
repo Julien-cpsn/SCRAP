@@ -39,7 +39,7 @@
 		$selected_conference_store.conference_name = conference.venue
 		$selected_conference_store.conference_acronym = conference.acronym
 
-		goto(`/conference/${conference.acronym}`)
+		goto(`/conference?acronym=${conference.acronym}`)
 	}
 </script>
 

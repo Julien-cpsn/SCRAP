@@ -27,7 +27,7 @@
 		FileSearchOutline,
 		SearchOutline
 	} from 'flowbite-svelte-icons'
-	import { selected_conference_store } from '../../../stores/app-store.js'
+	import { selected_conference_store } from '../../stores/app-store.js'
 	import { sineOut } from 'svelte/easing'
 	import { SCRAP_API_URL, SCRAP_HUB_URL } from '$env/static/public';
 
