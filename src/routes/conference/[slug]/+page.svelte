@@ -15,9 +15,9 @@
 		TableBodyRow,
 		TableHead,
 		TableHeadCell,
-		Textarea, Toast,
+		Textarea, Toast, Toggle,
 		Tooltip
-	} from 'flowbite-svelte'
+	} from 'flowbite-svelte';
 	import {
 		ArrowLeftOutline,
 		BadgeCheckOutline,
@@ -42,11 +42,11 @@
 		let tmp = publications.filter((publication) => publication.title.toLowerCase().includes(search.toLowerCase()))
 
 		switch (matching_sort) {
-			case 'asc':
-				tmp = tmp.sort((a, b) => (a.matching === b.matching)? 0 : a.matching? -1 : 1)
-				break
 			case 'desc':
-				tmp = tmp.sort((a, b) => (a.matching === b.matching)? 0 : a? 1 : -1)
+				tmp = tmp.sort((a, b) => a.matching_keywords.length - b.matching_keywords.length)
+				break
+			case 'asc':
+				tmp = tmp.sort((a, b) => b.matching_keywords.length - a.matching_keywords.length)
 				break
 		}
 
@@ -66,6 +66,7 @@
 	let promise = $state(find_publications())
 
 	let keywords_popup = $state(false)
+	let should_reset_previously_matched_publications = $state(false)
 	let processing = $state(false)
 	let processing_percentage = $state(0.0)
 
@@ -77,13 +78,18 @@
 		const response = await axios.post(`${SCRAP_API_URL}/find-publications`, { acronym: acronym.toLowerCase() })
 
 		if (response.status === 200) {
-			publications = await response.data.map(publication => {
-				return {
-					matching: false,
-					...publication
-				}
-			})
+			publications = await response.data
+			reset_matching_keywords()
 		}
+	}
+
+	function reset_matching_keywords() {
+		publications = publications.map(publication => {
+			return {
+				...publication,
+				matching_keywords: []
+			}
+		})
 	}
 
 	async function toggle_row(index) {
@@ -131,6 +137,10 @@
 			return
 		}
 
+		if (should_reset_previously_matched_publications) {
+			reset_matching_keywords()
+		}
+
 		processing = true
 
 		processing_percentage = 0.0
@@ -159,12 +169,12 @@
 					keywords: keywords
 				})
 
-			const titles = response.data.titles
+			const matching_publications = response.data.matching_publications
 
-			for (const title of titles) {
+			for (const matching_publication of matching_publications) {
 				for (let publication of publications) {
-					if (publication.title === title) {
-						publication.matching = true
+					if (publication.title === matching_publication.title) {
+						publication.matching_keywords = matching_publication.matching_keywords
 					}
 				}
 			}
@@ -177,9 +187,10 @@
 	}
 
 	function export_to_csv() {
-		let csv = 'title,authors,year,doi'
+		let csv = 'matching_keyword,title,authors,year,doi\n'
 
 		for (const publication of filtered_publications()) {
+			let keywords_str = publication.matching_keywords.join(';')
 			let authors_str = ''
 			if (publication.authors !== undefined) {
 				if (Array.isArray(publication.authors.author)) {
@@ -195,7 +206,7 @@
 					authors_str = publication.authors.author.text
 				}
 			}
-			csv += `${publication.title},${authors_str},${publication.year},${publication.doi}\n`
+			csv += `"${keywords_str}","${publication.title}","${authors_str}","${publication.year}","${publication.doi}"\n`
 		}
 
 		const element = document.createElement('a');
@@ -273,9 +284,16 @@
 						<TableBodyRow on:click={() => toggle_row(i)}>
 							<TableBodyCell>
 								<div class="w-full flex justify-center items-center">
-									{#if publication.matching}
+									{#if publication.matching_keywords.length > 0}
 										<BadgeCheckOutline color="green"></BadgeCheckOutline>
-										<Tooltip placement='right'>Matches given keywords</Tooltip>
+										<Tooltip placement='right'>
+											<div>
+												<span>Matches keywords:</span>
+												{#each publication.matching_keywords as keyword}
+													<br><span>- {keyword}</span>
+												{/each}
+											</div>
+										</Tooltip>
 									{:else}
 										<CloseCircleOutline color="red"></CloseCircleOutline>
 										<Tooltip placement='right'>Does not match given keywords</Tooltip>
@@ -345,6 +363,10 @@
 		<h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Enter the keywords or concept you want to match</h3>
 
 		<Textarea class="h-32 mb-4" placeholder={ "- Cancer\n- Mitochondria\n- ..." } style="resize: none;" bind:value={$selected_conference_store.keywords}/>
+
+		<div class="mb-4">
+			<Toggle bind:checked={should_reset_previously_matched_publications}>Reset previously matched publications</Toggle>
+		</div>
 
 		<Button color="red" class="me-2" on:click={ask_chat_gpt}>Match publications</Button>
 		<Button color="alternative">No, cancel</Button>

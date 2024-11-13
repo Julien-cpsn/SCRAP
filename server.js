@@ -7,14 +7,20 @@ const client = new OpenAI({
 });
 
 const JSON_SCHEMA = `{
-	"titles": {
+	"matching_publications": {
 		"type": "array",
-			"items": {
-			"type": "string"
+		"items": {
+			"type": "object",
+    	"properties": {
+    		"title": "string",
+    		"matching_keywords": {
+    			"type": "array",
+    			"items": "string"
+				}
+			}
 		}
 	}
-}
-`
+}`
 
 const express = require('express')
 const cors = require('cors');
@@ -104,16 +110,17 @@ ${publications}`
 	const chat_completion = await client.chat.completions.create({
 		messages: [
 			{
-				"role": "system",
-				"content": `You are a helpful assistant designed to output JSON that follows the following json schema:\n${JSON_SCHEMA}`
+				role: 'system',
+				content: `You are a helpful assistant designed to output JSON that follows the following json schema:\n${JSON_SCHEMA}`
 			},
 			{
-
-				"role": "user",
-				"content": prompt,
+				role: 'user',
+				content: prompt
 			}
 		],
 		model: 'gpt-4o-mini',
+		temperature: 0.1,
+		top_p: 0.2
 	});
 
 	let data = chat_completion.choices[0].message.content
