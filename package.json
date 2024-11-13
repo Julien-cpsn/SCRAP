@@ -27,6 +27,7 @@
   "dependencies": {
     "@rollup/rollup-win32-x64-msvc": "^4.26.0",
     "@sveltejs/adapter-node": "^5.2.9",
+    "@sveltejs/adapter-static": "^3.0.6",
     "autoprefixer": "^10.4.20",
     "axios": "^1.7.7",
     "cheerio": "^1.0.0",
